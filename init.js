@@ -25,19 +25,23 @@ let getInfo = function() {
   return JSON.stringify({
     humidity: dht.getHumidity(),
     temperature: dht.getTemp(),
-    device: device
+    device: device,
+    timestamp: datetime
   });
 };
 
 // Blink built-in LED every second
 GPIO.set_mode(led, GPIO.MODE_OUTPUT);
 Timer.set(30000 /* 30 sec */, Timer.REPEAT, function() {
+  let now = Timer.now();
+  let datetime = Timer.fmt("%H:%M:%S", now);
   let t = dht.getTemp();
   let h = dht.getHumidity();
   let value = GPIO.toggle(led);
   print('temperature:', t, '*C');
   print('humidity:', h, '%');
   print('device:', device);
+  print('timestamp:',datetime);
   let message = getInfo();
   let ok = MQTT.pub(topic, message, 1);
   print('Published:', ok, topic, '->', message);
@@ -64,6 +68,3 @@ Event.addGroupHandler(Net.EVENT_GRP, function(ev, evdata, arg) {
   }
   print('== Net event:', ev, evs);
 }, null);
-
-
-
